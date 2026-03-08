@@ -1,0 +1,932 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anker Prime 160W Telemetry</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap');
+
+        :root {
+            --bg-color: #0d131f;
+            --fg-color: #e9efff;
+            --card-bg: rgba(14, 23, 38, 0.82);
+            --primary-color: #7fb3ff;
+            --success-color: #7ce7b3;
+            --warn-color: #ffc57a;
+            --error-color: #ff839d;
+            --border-color: rgba(127, 179, 255, 0.28);
+            --muted-color: #93a4ca;
+            --glow-color: rgba(86, 152, 255, 0.18);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            background:
+                radial-gradient(circle at 14% -4%, rgba(89, 167, 255, 0.24), transparent 36%),
+                radial-gradient(circle at 92% 2%, rgba(60, 220, 183, 0.18), transparent 34%),
+                radial-gradient(circle at 50% 116%, rgba(151, 112, 255, 0.16), transparent 42%),
+                linear-gradient(145deg, #0a0f18 0%, #0f1727 55%, #0c1321 100%);
+            color: var(--fg-color);
+            font-family: 'Manrope', 'Noto Sans SC', sans-serif;
+            margin: 0;
+            min-height: 100vh;
+            line-height: 1.45;
+        }
+
+        /* The top container will now dictate its own height based on content */
+        .top-container {
+            max-width: 1380px;
+            margin: 0 auto;
+            padding: 1.25rem clamp(1rem, 2.2vw, 2rem);
+            display: flex;
+            flex-direction: column;
+            gap: 1.1rem;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+            background: linear-gradient(140deg, rgba(18, 29, 49, 0.92) 0%, rgba(14, 23, 40, 0.84) 100%);
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 14px 32px rgba(2, 7, 17, 0.42);
+            padding: 0.9rem 1rem;
+            backdrop-filter: blur(10px);
+        }
+
+        h1 {
+            color: var(--fg-color);
+            margin: 0;
+            font-size: clamp(1.45rem, 2.6vw, 1.95rem);
+            font-weight: 800;
+            letter-spacing: 0.02em;
+        }
+
+        .controls {
+            display: flex;
+            gap: 1rem;
+            flex-shrink: 0;
+        }
+
+        .top-meta {
+            flex: 1;
+            min-width: 300px;
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 1.5rem;
+            align-items: center;
+            margin-left: 2rem;
+        }
+
+        .top-meta-item {
+            min-height: 66px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 0.12rem;
+            text-align: center;
+            padding: 0.2rem 0.35rem;
+        }
+
+/* --- 寮哄埗淇 MAC/Serial/Firmware 鏍峰紡 --- */
+        /* 绗竴琛屾爣棰橈細寮哄埗鍙樿摑銆佸彉澶с€佸姞绮?*/
+        .top-meta-label {
+            color: var(--primary-color) !important; 
+            font-size: clamp(1.02rem, 1.45vw, 1.26rem) !important;
+            font-weight: bold !important;
+            text-transform: none !important;
+            letter-spacing: normal !important;
+        }
+
+        /* 绗簩琛屾暟鍊硷細寮哄埗鍙樼櫧銆佸彉澶с€佸姞绮楋紝鍘绘帀鍙戝厜 */
+        .top-meta-value {
+            color: var(--fg-color) !important; 
+            font-size: clamp(1.02rem, 1.45vw, 1.26rem) !important;
+            font-weight: bold !important;
+            text-shadow: none !important;
+        }
+
+        .top-meta-label {
+            font-size: 0.74rem;
+            font-weight: 700;
+            line-height: 1.1;
+            letter-spacing: 0.04em;
+            color: #7f97c7;
+            text-transform: uppercase;
+        }
+
+        .top-meta-value {
+            font-family: 'JetBrains Mono', 'Cascadia Code', monospace;
+            font-size: clamp(1.1rem, 1.75vw, 1.6rem);
+            font-weight: 700;
+            line-height: 1.18;
+            letter-spacing: 0.01em;
+            color: #ff5f70;
+            text-shadow: 0 0 14px rgba(255, 95, 112, 0.22);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            width: 100%;
+            min-height: 1.25em;
+        }
+
+        .top-meta-value.meta-active {
+            color: #9ad2ff;
+            text-shadow: 0 0 14px rgba(154, 210, 255, 0.2);
+        }
+
+        .button {
+            padding: 0.62rem 1.1rem;
+            font-size: 0.95rem;
+            border: 1px solid transparent;
+            border-radius: 11px;
+            cursor: pointer;
+            transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease, background-color 0.16s ease;
+            font-weight: 700;
+            font-family: 'Manrope', 'Noto Sans SC', sans-serif;
+        }
+
+        #connectButton {
+            background: linear-gradient(135deg, #5f90ff 0%, #53bfd4 100%);
+            color: #09111f;
+        }
+
+        #connectButton:hover:not(:disabled) {
+            transform: translateY(-1px);
+            box-shadow: 0 10px 18px rgba(83, 151, 255, 0.34);
+        }
+
+        #connectButton:disabled {
+            background-color: #545c7e;
+            color: #999;
+            cursor: not-allowed;
+        }
+
+        #resetButton {
+            background-color: rgba(73, 88, 122, 0.75);
+            color: var(--fg-color);
+            border-color: rgba(138, 160, 210, 0.4);
+        }
+
+        #resetButton:hover {
+            background-color: rgba(255, 131, 157, 0.2);
+            border-color: rgba(255, 131, 157, 0.5);
+            color: #ffd9e3;
+        }
+
+        .status-card {
+            background:
+                linear-gradient(160deg, rgba(17, 28, 46, 0.88), rgba(13, 20, 35, 0.83));
+            border-radius: 14px;
+            padding: 1rem 1.1rem;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 12px 26px rgba(4, 9, 18, 0.4);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .status-card h2 {
+            margin-top: 0;
+            margin-bottom: 1rem;
+            border-bottom: 1px solid rgba(127, 179, 255, 0.25);
+            padding-bottom: 0.75rem;
+            font-size: 1rem;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1rem;
+        }
+
+        .device-info-layout {
+            display: grid;
+            grid-template-columns: minmax(170px, 260px) auto;
+            gap: 1rem;
+            align-items: start;
+            justify-content: start;
+        }
+
+        .device-info-image-card {
+            background: linear-gradient(170deg, rgba(10, 18, 30, 0.96), rgba(12, 22, 38, 0.88));
+            border-radius: 12px;
+            padding: 0.65rem;
+            border: 1px solid rgba(128, 185, 255, 0.32);
+            display: flex;
+            justify-content: center;
+            box-shadow: inset 0 0 24px rgba(35, 104, 214, 0.16);
+        }
+
+        .device-info-image-wrap {
+            width: 100%;
+            max-width: 190px;
+        }
+
+        .device-info-image-wrap img {
+            width: 100%;
+            display: block;
+            object-fit: contain;
+        }
+
+        .charger-visual {
+            position: relative;
+            width: 100%;
+        }
+
+        .charger-base-image {
+            display: block;
+            width: 100%;
+            filter: drop-shadow(0 10px 15px rgba(0, 0, 0, 0.32));
+        }
+
+        .cable-overlay {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.18s ease-out;
+        }
+
+        .cable-overlay.is-active {
+            opacity: 1;
+        }
+
+        .overlay-tip {
+            margin-top: 0.45rem;
+            font-size: 0.74rem;
+            color: var(--muted-color);
+            text-align: center;
+            letter-spacing: 0.03em;
+        }
+
+        .device-info-fields {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(180px, 280px));
+            gap: 0.75rem;
+            align-content: start;
+            align-self: start;
+            width: fit-content;
+        }
+
+        .device-info-field-card {
+            min-height: 0;
+            padding: 0.65rem 0.8rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+        }
+
+        .device-info-field-card h3 {
+            margin-top: 0;
+            margin-bottom: 0.35rem;
+            color: var(--primary-color);
+            font-size: 0.98rem;
+            letter-spacing: 0.03em;
+        }
+
+        .device-info-field-card .status-item {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+            justify-content: flex-start;
+        }
+
+        .device-info-field-card .status-item .value {
+            font-size: 0.9rem;
+            line-height: 1.35;
+            display: block;
+            word-break: break-all;
+        }
+
+        .device-info-field-card .status-item .value.status-inactive {
+            color: #7b86b8 !important;
+        }
+
+        .live-quad-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(360px, 1fr));
+            gap: 1.1rem;
+        }
+
+        .total-power-card {
+            background: linear-gradient(165deg, rgba(10, 18, 31, 0.95), rgba(10, 19, 34, 0.8));
+            border-radius: 12px;
+            padding: 1.2rem;
+            border: 1px solid rgba(128, 185, 255, 0.3);
+        }
+
+        .total-power-card h3 {
+            margin-top: 0;
+            margin-bottom: 0.65rem;
+            color: var(--primary-color);
+            font-size: clamp(1.02rem, 1.45vw, 1.26rem);
+            line-height: 1.15;
+            text-align: center;
+        }
+
+        .live-quad-grid>.total-power-card,
+        .live-quad-grid>.port-card {
+            min-height: 400px;
+        }
+
+        .total-power-row {
+            display: grid;
+            grid-template-columns: minmax(180px, 230px) 1fr;
+            gap: 0.55rem;
+            align-items: center;
+            height: auto;
+        }
+
+        .live-charger-slot {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.45rem;
+            grid-row: span 1;
+        }
+
+        .live-charger-visual {
+            width: 100%;
+            max-width: 220px;
+        }
+
+        .live-charger-label {
+            font-size: 0.76rem;
+            color: var(--muted-color);
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .live-gauge-block {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 0.12rem;
+        }
+
+        .live-gauge-block.total-output-block {
+            margin-top: 0.95rem;
+        }
+
+        .gauge-title {
+            font-size: 0.72rem;
+            color: var(--muted-color);
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .total-power-gauge-wrap {
+            position: relative;
+            width: 196px;
+            height: 196px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .total-power-gauge-wrap svg {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .total-power-center {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin-top: 14px;
+        }
+
+        .total-power-number {
+            font-family: 'JetBrains Mono', 'Cascadia Code', monospace;
+            font-weight: bold;
+            font-size: 3rem;
+            line-height: 1;
+            color: var(--fg-color);
+        }
+
+        .total-power-unit {
+            margin-top: 0.2rem;
+            font-size: 0.82rem;
+            color: #b8c7ea;
+            letter-spacing: 0.08em;
+        }
+
+        .port-card {
+            background: linear-gradient(165deg, rgba(10, 18, 31, 0.94), rgba(11, 21, 37, 0.8));
+            border-radius: 12px;
+            padding: 1.2rem;
+            border: 1px solid rgba(127, 179, 255, 0.28);
+            transition: opacity 0.28s ease, border-color 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease;
+            box-shadow: 0 8px 16px rgba(2, 7, 16, 0.24);
+        }
+
+        .port-card:hover {
+            transform: translateY(-2px);
+            border-color: rgba(139, 203, 255, 0.5);
+            box-shadow: 0 12px 26px rgba(7, 15, 31, 0.34);
+        }
+
+        .port-card.port-off {
+            opacity: 0.5;
+            filter: saturate(0.7);
+        }
+
+        .port-card h3 {
+            margin-top: 0;
+            margin-bottom: 1rem;
+            color: var(--primary-color);
+            font-size: clamp(1.02rem, 1.45vw, 1.26rem);
+            line-height: 1.15;
+            text-align: center;
+        }
+
+        .port-card-header {
+            position: relative;
+            margin-bottom: 1rem;
+        }
+
+        .port-card-header h3 {
+            margin: 0;
+        }
+
+        .port-card .status-item {
+            flex-direction: row;
+            justify-content: space-between;
+            align-items: baseline;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px dashed #2a2f4a;
+            margin-bottom: 0.5rem;
+        }
+
+        .port-card .status-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+
+        .status-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .status-item .label {
+            font-size: 1.15rem;
+            color: var(--muted-color);
+            margin-bottom: 0.25rem;
+        }
+
+        .status-item .value {
+            font-family: 'JetBrains Mono', 'Cascadia Code', monospace;
+            font-weight: bold;
+            font-size: 1.45rem;
+            word-break: break-all;
+            color: var(--fg-color);
+        }
+
+        .status-inactive {
+            color: #545c7e !important;
+        }
+
+        .status-active {
+            color: var(--success-color) !important;
+        }
+
+        .battery-level .value {
+            font-size: 1.5rem;
+            color: var(--success-color);
+        }
+
+        /* The log wrapper is given a fixed, responsive height */
+        #log-wrapper {
+            max-width: 1380px;
+            margin: 0 auto;
+            padding: 0 clamp(1rem, 2.2vw, 2rem) 1.5rem;
+            height: 52vh;
+            min-height: 290px;
+            /* Assign a portion of the viewport height */
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* The log div itself will grow to fill the wrapper and be scrollable */
+        #log {
+            background-color: rgba(6, 11, 21, 0.82);
+            border: 1px solid rgba(127, 179, 255, 0.28);
+            border-radius: 12px;
+            padding: 1rem;
+            overflow-y: scroll;
+            flex-grow: 1;
+            /* Fills the parent #log-wrapper */
+            font-family: 'JetBrains Mono', 'Cascadia Code', monospace;
+            font-size: 0.9rem;
+        }
+
+        .log-transaction {
+            border-left: 3px solid #545c7e;
+            padding-left: 10px;
+            margin-bottom: 12px;
+            background-color: rgba(0, 0, 0, 0.1);
+            border-radius: 6px;
+        }
+
+        .log-entry {
+            margin-bottom: 8px;
+            padding: 5px 12px;
+            border-left: 4px solid var(--border-color);
+            line-height: 1.6;
+        }
+
+        .log-transaction .log-entry {
+            border-left: none;
+            padding-left: 0;
+        }
+
+        .log-entry.sent {
+            border-left-color: var(--primary-color);
+        }
+
+        .log-entry.received {
+            border-left-color: var(--success-color);
+        }
+
+        .log-entry.info {
+            border-left-color: #545c7e;
+        }
+
+        .log-entry.error {
+            border-left-color: var(--error-color);
+            color: var(--error-color);
+        }
+
+        .log-entry.success {
+            border-left-color: var(--success-color);
+            color: var(--success-color);
+        }
+
+        .log-entry.warn {
+            border-left-color: var(--warn-color);
+        }
+
+        .log-entry .payload {
+            color: #a9b1d6;
+            display: block;
+            margin-top: 5px;
+            padding: 8px;
+            background-color: rgba(0, 0, 0, 0.2);
+            border-radius: 4px;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+
+        .info-link {
+            margin: 0.25rem 0 0 0;
+            font-size: 0.86rem;
+            color: var(--muted-color);
+        }
+
+        .info-link a {
+            color: var(--primary-color);
+        }
+
+        .info-link a:hover {
+            color: var(--warn-color);
+        }
+
+        .charger-raw-status {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            padding: 10px;
+            margin: 0;
+            white-space: pre-wrap;
+            word-break: break-word;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+            font-size: 0.86rem;
+            line-height: 1.35;
+            color: #a9b1d6;
+        }
+
+        @keyframes riseIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .status-card {
+            animation: riseIn 0.36s ease-out both;
+        }
+
+        .status-card:nth-of-type(2) {
+            animation-delay: 0.04s;
+        }
+
+        .status-card:nth-of-type(3) {
+            animation-delay: 0.08s;
+        }
+
+        .status-card:nth-of-type(4) {
+            animation-delay: 0.12s;
+        }
+
+        .status-card:nth-of-type(5) {
+            animation-delay: 0.16s;
+        }
+
+        @media (max-width: 1200px) {
+            .total-power-row {
+                grid-template-columns: minmax(150px, 190px) 1fr;
+                gap: 0.7rem;
+            }
+
+            .live-charger-visual {
+                max-width: 190px;
+            }
+
+            .total-power-gauge-wrap {
+                width: 140px;
+                height: 140px;
+            }
+
+            .total-power-number {
+                font-size: 1.9rem;
+            }
+        }
+
+        @media (max-width: 900px) {
+            header {
+                align-items: flex-start;
+            }
+
+            .controls {
+                width: 100%;
+            }
+
+            .controls .button {
+                flex: 1;
+            }
+
+            .top-meta {
+                width: 100%;
+                min-width: 0;
+            }
+
+            .live-quad-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .live-quad-grid>.total-power-card,
+            .live-quad-grid>.port-card {
+                min-height: auto;
+            }
+        }
+
+        @media (max-width: 700px) {
+            .top-meta {
+                grid-template-columns: 1fr;
+                margin-left: 0;
+            }
+
+            .top-meta-item {
+                justify-content: flex-start;
+                min-height: 54px;
+            }
+
+            .top-meta-label {
+                font-size: 0.72rem;
+            }
+
+            .top-meta-item .top-meta-value {
+                font-size: 0.88rem;
+            }
+
+            .total-power-row {
+                grid-template-columns: 1fr;
+                gap: 0.65rem;
+                height: auto;
+            }
+
+            .live-charger-slot {
+                grid-row: span 1;
+            }
+
+            .live-charger-visual {
+                max-width: 188px;
+            }
+        }
+
+
+        .credits-footer {
+            max-width: 1380px;
+            margin: -0.15rem auto 1.15rem;
+            padding: 0 clamp(1rem, 2.2vw, 2rem);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.35rem 1rem;
+            align-items: center;
+            color: var(--muted-color);
+            font-size: 0.82rem;
+            line-height: 1.45;
+            opacity: 0.92;
+        }
+
+        .credits-footer strong {
+            color: var(--text-color);
+            font-size: 0.78rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .credits-footer a {
+            color: var(--primary-color);
+            text-decoration: none;
+            word-break: break-word;
+        }
+
+        .credits-footer a:hover {
+            text-decoration: underline;
+        }
+        @media (max-width: 560px) {
+            .top-container {
+                padding: 0.85rem 0.72rem;
+                gap: 0.8rem;
+            }
+
+            .status-card {
+                padding: 0.9rem 0.75rem;
+            }
+
+            #log-wrapper {
+                padding-left: 0.72rem;
+                padding-right: 0.72rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="top-container">
+        <header>
+            <div class="controls">
+                <button id="connectButton" class="button">Connect & Start Telemetry</button>
+                <button id="resetButton" class="button">Reset</button>
+            </div>
+            <div class="top-meta-item">
+                <span class="top-meta-label">MAC Address</span>
+                <span id="statusMac" class="top-meta-value">--</span>
+            </div>
+            <div class="top-meta-item">
+                <span class="top-meta-label">Serial Number</span>
+                <span id="statusSerial" class="top-meta-value">--</span>
+            </div>
+            <div class="top-meta-item">
+                <span class="top-meta-label">Firmware</span>
+                <span id="statusVersion" class="top-meta-value">--</span>
+            </div>
+        </header>
+
+        <div class="status-card">
+            <div class="live-quad-grid">
+                <div class="total-power-card" id="totalPowerCard">
+                    <h3>Live Overview</h3>
+                    <div class="total-power-row">
+                        <div class="live-charger-slot">
+                            <div class="charger-visual live-charger-visual">
+                                <img id="charger-base-live" class="charger-base-image" src="" alt="Anker charger (live)">
+                                <img id="overlay-live-c1" class="cable-overlay"
+                                    src="" alt="Live C1 cable overlay">
+                                <img id="overlay-live-c2" class="cable-overlay"
+                                    src="" alt="Live C2 cable overlay">
+                                <img id="overlay-live-c3" class="cable-overlay"
+                                    src="" alt="Live C3 cable overlay">
+                            </div>
+                        </div>
+
+                        <div class="live-gauge-block total-output-block">
+                            <div class="total-power-gauge-wrap">
+                                <svg viewBox="0 0 100 100">
+                                    <defs>
+                                        <linearGradient id="totalPowerGrad" x1="0%" y1="100%" x2="100%" y2="0%">
+                                            <stop offset="0%" stop-color="#4f46e5" />
+                                            <stop offset="100%" stop-color="#67e8f9" />
+                                        </linearGradient>
+                                    </defs>
+                                    <circle cx="50" cy="50" r="42" fill="none" stroke="#374151" stroke-width="4.5"
+                                        stroke-linecap="round" transform="rotate(150 50 50)"
+                                        stroke-dasharray="175.93 263.89" />
+                                    <circle id="totalPowerArc" cx="50" cy="50" r="42" fill="none"
+                                        stroke="url(#totalPowerGrad)" stroke-width="4.5" stroke-linecap="round"
+                                        transform="rotate(150 50 50)" stroke-dasharray="0 263.89" />
+                                </svg>
+                                <div class="total-power-center">
+                                    <span id="statusTotalOutput" class="total-power-number status-inactive">N/A</span>
+                                    <span id="totalPowerUnit" class="total-power-unit"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="port-card" id="portC1">
+                    <div class="port-card-header">
+                        <h3>USB-C 1</h3>
+                    </div>
+                    <div class="status-item"><span class="label">Status</span><span id="statusUsbC1Mode"
+                            class="value status-inactive">N/A</span></div>
+                    <div class="status-item"><span class="label">Voltage</span><span id="statusUsbC1Voltage"
+                            class="value status-inactive">N/A</span></div>
+                    <div class="status-item"><span class="label">Current</span><span id="statusUsbC1Current"
+                            class="value status-inactive">N/A</span></div>
+                    <div class="status-item"><span class="label">Power</span><span id="statusUsbC1Power"
+                            class="value status-inactive">N/A</span></div>
+                    <div class="status-item"><span class="label">Cable</span><span id="statusUsbC1Cable"
+                            class="value status-inactive">N/A</span></div>
+                    <div class="status-item"><span class="label">Charging Info</span><span id="statusUsbC1ChargingInfo"
+                            class="value status-inactive">N/A</span></div>
+                </div>
+                <div class="port-card" id="portC2">
+                    <div class="port-card-header">
+                        <h3>USB-C 2</h3>
+                    </div>
+                    <div class="status-item"><span class="label">Status</span><span id="statusUsbC2Mode"
+                            class="value status-inactive">N/A</span></div>
+                    <div class="status-item"><span class="label">Voltage</span><span id="statusUsbC2Voltage"
+                            class="value status-inactive">N/A</span></div>
+                    <div class="status-item"><span class="label">Current</span><span id="statusUsbC2Current"
+                            class="value status-inactive">N/A</span></div>
+                    <div class="status-item"><span class="label">Power</span><span id="statusUsbC2Power"
+                            class="value status-inactive">N/A</span></div>
+                    <div class="status-item"><span class="label">Cable</span><span id="statusUsbC2Cable"
+                            class="value status-inactive">N/A</span></div>
+                    <div class="status-item"><span class="label">Charging Info</span><span id="statusUsbC2ChargingInfo"
+                            class="value status-inactive">N/A</span></div>
+                </div>
+                <div class="port-card" id="portA">
+                    <div class="port-card-header">
+                        <h3>USB-C 3</h3>
+                    </div>
+                    <div class="status-item"><span class="label">Status</span><span id="statusUsbAMode"
+                            class="value status-inactive">N/A</span></div>
+                    <div class="status-item"><span class="label">Voltage</span><span id="statusUsbAVoltage"
+                            class="value status-inactive">N/A</span></div>
+                    <div class="status-item"><span class="label">Current</span><span id="statusUsbACurrent"
+                            class="value status-inactive">N/A</span></div>
+                    <div class="status-item"><span class="label">Power</span><span id="statusUsbAPower"
+                            class="value status-inactive">N/A</span></div>
+                    <div class="status-item"><span class="label">Cable</span><span id="statusUsbACable"
+                            class="value status-inactive">N/A</span></div>
+                    <div class="status-item"><span class="label">Charging Info</span><span id="statusUsbAChargingInfo"
+                            class="value status-inactive">N/A</span></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="status-card">
+            <h2>Charger Raw Status (0x0840)</h2>
+            <pre id="chargerRawStatus" class="charger-raw-status">No charger snapshot yet.</pre>
+        </div>
+
+    </div>
+
+    <div id="log-wrapper">
+
+        <div id="log"></div>
+    </div>
+
+    <footer class="credits-footer" aria-label="Acknowledgements">
+        <strong>Thanks</strong>
+        <span><a href="https://github.com/flip-dots/SolixBLE" target="_blank" rel="noopener noreferrer">flip-dots/SolixBLE</a></span>
+        <span><a href="https://github.com/atc1441/Anker_Prime_BLE_hacking" target="_blank" rel="noopener noreferrer">atc1441/Anker_Prime_BLE_hacking</a></span>
+    </footer>
+
+        <script src="AnkerPrimeWebBle_A2687.data.js"></script>
+    <script src="AnkerPrimeWebBle_A2687.js"></script>
+</body>
+
+</html>
+
+
+
+
