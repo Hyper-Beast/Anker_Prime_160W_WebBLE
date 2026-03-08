@@ -1,5 +1,10 @@
 # Anker Prime 160W (A2687) Web BLE Telemetry
 
+<img width="2642" height="1782" alt="3a12df1485ee40d11616c0669f038e6b" src="https://github.com/user-attachments/assets/1868013a-8b48-4e2c-b127-e1dad08678e7" />
+
+
+
+
 This is an AI-assisted Web Bluetooth telemetry project for the **Anker Prime 160W (A2687)**.
 
 The implementation is based on prior BLE reverse-engineering work and public research from:
